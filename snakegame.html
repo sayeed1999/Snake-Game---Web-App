@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Snake Game - @sayeed1999</title>
+    <link rel="stylesheet" href="snake.css">
+    <style>
+      *{
+        margin: 0 auto;
+      }
+      canvas{
+        width: 95%;
+      }
+      h2{
+        width: 90%;
+        margin-top: 16px;
+        margin-bottom: 8px;
+      }
+      body{
+        margin: 0px;
+      }
+      button{
+        width: 25%;
+        height:40%;
+        font-size: 95%;
+        
+        background-color: lightblue;
+        padding: 24px;
+        padding: 6%;
+        
+        margin: 1px;
+        margin-top: 1px;
+        margin: 1%;
+      }
+      
+      button:hover{
+        background-color: lightgreen;
+      }
+      div{
+        width: 90%;
+        text-align: center;
+      }
+      #reset{
+        width: 30%;
+        background-color: pink;
+        font-weight: bold;
+      }
+      #length{
+        text-align: right;
+        font-size: 14px;
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+        border: none;
+        
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+    <h2>Snake Game @sayeed1999</h2>
+    <canvas id="snakeboard" width="300" height="200" style="border:4px solid #c3c3c3">Your browser doesnt support the canvas element</canvas> <br/>
+    
+    <p id="length"><b><i>Length: 5</i></b></p> <br/>
+    <button id="up" >Up</button> <br/>
+    <button id="left" >Left</button>
+    <button id="down" >Down</button>
+    <button id="right" >Right</button><br/>
+    <br/>
+    <button id="reset">Reset Game</button>
+    </div>
+    
+    <script>
+      let speed = 225, dx = 10, dy = 10, board_dx=300, board_dy = 200;
+      let a = dx, b = 0;
+      
+      let l = document.getElementById('left');
+      let r = document.getElementById('right');
+      let u = document.getElementById('up');
+      let d = document.getElementById('down');
+      let len = document.getElementById('length');
+      let length = 5;
+      let reset = document.getElementById('reset');
+      
+      l.addEventListener("click", function(){
+        if(snake[0].x<=snake[1].x){
+          a=-dx; b=0;
+        }
+      });
+      r.addEventListener("click", function(){
+        if(snake[0].x>=snake[1].x){
+          a=dx; b=0;
+        }
+      });
+      u.addEventListener("click", function(){
+        if(snake[0].y<=snake[1].y){
+          a=0; b=-dx;
+        }
+      });
+      d.addEventListener("click", function(){
+        if(snake[0].y>=snake[1].y){
+          a=0; b=dx;
+        }
+      });
+      
+      function funcReset(){
+        a=dx; b=0;
+        snake = [{x: 150, y: 150},  {x: 140, y: 150},  {x: 130, y: 150},  {x: 120, y: 150},  {x: 110, y: 150},];
+        
+        length = 5;
+        len.innerHTML = "Length: 5";
+        Object.assign(len.style,len_style);
+        
+        clearCanvas();
+        drawSnake();
+        genFood();
+        drawFood();
+      }
+      reset.addEventListener("click", funcReset);
+    
+      var snakeboard = document.getElementById("snakeboard");
+      var ctx = snakeboard.getContext("2d");
+      
+      let snake = [{x: 150, y: 150},  {x: 140, y: 150},  {x: 130, y: 150},  {x: 120, y: 150},  {x: 110, y: 150},];
+      
+      let food_x = 0;
+      let food_y = 0;
+      
+      function genFood(){
+        food_x = Math.round(Math.random()*(board_dx-10));
+        food_x -= (food_x%dx);
+        food_y = Math.round(Math.random()*(board_dy-10));
+        food_y -= (food_y%dy);
+        //if food on the snake body, generate again
+        snake.forEach(function(part){
+          if(part.x===food_x && part.y===food_y) genFood();
+        });
+      }
+      
+      function clearCanvas(){
+        ctx.fillStyle = 'black';
+        ctx.strokeStyle = 'black';
+        ctx.fillRect(0,0,snakeboard.width,snakeboard.height);
+        ctx.strokeRect(0,0,snakeboard.width,snakeboard.height);
+      }
+      
+      function drawSnakePart(snakePart){
+        
+        ctx.fillStyle = "lightblue";
+        ctx.strokeStyle = "darkblue";
+        ctx.fillRect(snakePart.x, snakePart.y, dx, dy);
+        ctx.strokeRect(snakePart.x, snakePart.y, dx,dy);
+      }
+      
+      function drawSnake(){
+        snake.forEach(drawSnakePart);
+      }
+      
+      function drawFood(){
+        ctx.fillStyle = "lightgreen";
+        ctx.strokeStyle = "darkgreen";
+        ctx.fillRect(food_x, food_y, dx, dy);
+        ctx.strokeRect(food_x, food_y, dx, dy);
+      }
+      
+      function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      
+      let len_style = {
+        fontWeight: 'bold',
+        fontStyle: 'italic',
+      };
+      
+      function move(){
+        if(snake[0].x===food_x && snake[0].y===food_y){
+            genFood();
+            length++;
+            let str = "Length: " + length;
+            len.innerHTML = str;
+            Object.assign(len.style, len_style);
+        } else {
+          snake.pop();
+        }
+        let x,y;
+        x= snake[0].x+a;
+        y= snake[0].y+b;
+        if(x===board_dx) x= 0;
+        else if(x===-10) x= board_dx-10;
+        if(y===board_dy) y=0;
+        else if(y===-10) y= board_dy-10;
+        snake.unshift({
+          x: x,
+          y: y,
+        });
+        
+        clearCanvas();
+        drawSnake();
+        drawFood();
+        
+        let snake_len = snake.length;
+        for(let i=1; i<snake_len; i++){
+          if(snake[0].x===snake[i].x && snake[0].y===snake[i].y){
+            window.alert("GAME OVER!!\n⚠️if the game hangs, refresh!");
+            funcReset();
+          }
+        }
+        
+        sleep(speed).then(()=>move());
+      }
+      
+      clearCanvas();
+      drawSnake();
+      move();
+      genFood();
+      drawFood();
+      
+      
+    </script>
+  </body>
+</html>
